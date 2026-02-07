@@ -37,22 +37,60 @@ export function AuthForm({ role, type }: AuthFormProps) {
         const fullName = formData.get("fullName") as string;
 
         try {
-            // TODO: Implement Supabase Auth Logic here
-            console.log("Submitting:", { role, type, email, password, fullName });
+            if (type === "login") {
+                // Import the auth functions at the top of the file
+                const { signInWithProfile } = await import("@/lib/auth");
 
-            // Simulate API call
-            await new Promise((resolve) => setTimeout(resolve, 1500));
+                // Sign in with profile verification
+                const { profile, error: authError } = await signInWithProfile(email, password);
 
-            // Redirect on success (simulated)
-            const redirectTo = role === "nurse" ? "/nurse/dashboard" : "/";
-            router.push(redirectTo);
-        } catch (err) {
-            if (err instanceof Error) {
-                setError(err.message);
+                if (authError) {
+                    setError(authError.message);
+                    return;
+                }
+
+                if (!profile) {
+                    setError("Authentication failed. Please try again.");
+                    return;
+                }
+
+                // Redirect based on role
+                const redirectMap = {
+                    doctor: "/doctor/dashboard",
+                    nurse: "/nurse/dashboard",
+                    patient: "/patient/dashboard",
+                };
+
+                const redirectTo = redirectMap[profile.role] || "/";
+                router.push(redirectTo);
             } else {
-                setError("An unexpected error occurred.");
-            }
+                // Signup flow
+                const { signUpUser } = await import("@/lib/auth");
 
+                const { user, error: authError } = await signUpUser(
+                    email,
+                    password,
+                    fullName,
+                    role
+                );
+
+                if (authError) {
+                    setError(authError.message);
+                    return;
+                }
+
+                if (!user) {
+                    setError("Signup failed. Please try again.");
+                    return;
+                }
+
+                // Show success message or redirect
+                // For now, redirect to login page
+                router.push(`/${role}/login`);
+            }
+        } catch (err) {
+            console.error("Authentication error:", err);
+            setError("An unexpected error occurred. Please try again.");
         } finally {
             setIsLoading(false);
         }

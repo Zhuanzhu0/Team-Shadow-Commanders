@@ -15,6 +15,23 @@ export interface Alert {
     acknowledged: boolean;
 }
 
+export type PatientStatus = "Stable" | "Warning" | "Critical" | "Pending Discharge" | "Discharged";
+
+export interface BillItem {
+    id: string;
+    description: string;
+    cost: number;
+    timestamp: string;
+}
+
+export interface DischargeRequest {
+    status: "none" | "pending" | "approved" | "rejected";
+    requestedBy?: string;
+    requestedAt?: string;
+    approvedBy?: string;
+    approvedAt?: string;
+}
+
 export interface Patient {
     id: string;
     name: string;
