@@ -2,3 +2,9 @@ fastapi
 uvicorn
 jinja2
 python-multipart
+passlib[bcrypt]
+python-jose
+sqlalchemy
+email-validator
+psycopg2-binary
+python-dotenv

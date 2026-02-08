@@ -25,6 +25,8 @@ export function AuthForm({ role, type }: AuthFormProps) {
     const router = useRouter();
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
+    const [isVerifying, setIsVerifying] = useState(false);
+    const [pendingEmail, setPendingEmail] = useState("");
 
     async function onSubmit(event: React.FormEvent<HTMLFormElement>) {
         event.preventDefault();
@@ -32,16 +34,29 @@ export function AuthForm({ role, type }: AuthFormProps) {
         setError(null);
 
         const formData = new FormData(event.currentTarget);
-        const email = formData.get("email") as string;
-        const password = formData.get("password") as string;
-        const fullName = formData.get("fullName") as string;
 
         try {
-            if (type === "login") {
-                // Import the auth functions at the top of the file
-                const { signInWithProfile } = await import("@/lib/auth");
+            if (isVerifying) {
+                const otp = formData.get("otp") as string;
+                const { verifyEmailOtp } = await import("@/lib/auth");
 
-                // Sign in with profile verification
+                const { error: verifyError } = await verifyEmailOtp(pendingEmail, otp);
+
+                if (verifyError) {
+                    setError(verifyError.message);
+                    return;
+                }
+
+                // Verification successful
+                router.push(`/${role}/dashboard`); // Or login
+                return;
+            }
+
+            const email = formData.get("email") as string;
+            const password = formData.get("password") as string;
+
+            if (type === "login") {
+                const { signInWithProfile } = await import("@/lib/auth");
                 const { profile, error: authError } = await signInWithProfile(email, password);
 
                 if (authError) {
@@ -54,7 +69,6 @@ export function AuthForm({ role, type }: AuthFormProps) {
                     return;
                 }
 
-                // Redirect based on role
                 const redirectMap = {
                     doctor: "/doctor/dashboard",
                     nurse: "/nurse/dashboard",
@@ -65,6 +79,7 @@ export function AuthForm({ role, type }: AuthFormProps) {
                 router.push(redirectTo);
             } else {
                 // Signup flow
+                const fullName = formData.get("fullName") as string;
                 const { signUpUser } = await import("@/lib/auth");
 
                 const { user, error: authError } = await signUpUser(
@@ -84,9 +99,10 @@ export function AuthForm({ role, type }: AuthFormProps) {
                     return;
                 }
 
-                // Show success message or redirect
-                // For now, redirect to login page
-                router.push(`/${role}/login`);
+                // Switch to verification mode
+                setPendingEmail(email);
+                setIsVerifying(true);
+                setError(null); // Clear any errors
             }
         } catch (err) {
             console.error("Authentication error:", err);
@@ -107,6 +123,52 @@ export function AuthForm({ role, type }: AuthFormProps) {
         nurse: "text-teal-600",
         patient: "text-indigo-600",
     };
+
+    if (isVerifying) {
+        return (
+            <Card className="w-full max-w-md mx-auto shadow-xl border-0 ring-1 ring-slate-200">
+                <CardHeader className="space-y-1">
+                    <CardTitle className="text-2xl font-bold">Verify your account</CardTitle>
+                    <CardDescription>
+                        Enter the code sent to <span className="font-semibold">{pendingEmail}</span>
+                    </CardDescription>
+                </CardHeader>
+                <form onSubmit={onSubmit}>
+                    <CardContent className="space-y-4">
+                        <div className="space-y-2">
+                            <Label htmlFor="otp">Verification Code</Label>
+                            <Input
+                                id="otp"
+                                name="otp"
+                                placeholder="123456"
+                                required
+                                disabled={isLoading}
+                                className="text-center text-lg tracking-widest"
+                            />
+                        </div>
+                        {error && (
+                            <div className="text-sm text-red-500 font-medium">{error}</div>
+                        )}
+                    </CardContent>
+                    <CardFooter className="flex flex-col space-y-4">
+                        <Button className="w-full" disabled={isLoading}>
+                            {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                            Verify Account
+                        </Button>
+                        <Button
+                            variant="ghost"
+                            className="w-full"
+                            type="button"
+                            onClick={() => setIsVerifying(false)}
+                            disabled={isLoading}
+                        >
+                            Back to Signup
+                        </Button>
+                    </CardFooter>
+                </form>
+            </Card>
+        );
+    }
 
     return (
         <Card className="w-full max-w-md mx-auto shadow-xl border-0 ring-1 ring-slate-200">

@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body { margin: 0; padding: 0; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; background-color: #f1f5f9; color: #334155; }
+        .container { max-width: 500px; margin: 40px auto; background-color: #ffffff; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06); }
+        .header { background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); padding: 32px 24px; text-align: center; }
+        .logo { color: white; font-size: 24px; font-weight: 700; letter-spacing: -0.5px; text-decoration: none; display: inline-block; }
+        .content { padding: 40px 32px; text-align: center; }
+        h1 { margin: 0 0 16px 0; font-size: 20px; font-weight: 600; color: #1e293b; }
+        p { margin: 0 0 24px 0; font-size: 16px; line-height: 1.5; color: #475569; }
+        .otp-container { background-color: #eff6ff; padding: 24px; border-radius: 12px; margin: 24px 0; border: 1px dashed #bfdbfe; }
+        .otp-code { font-family: 'Courier New', Courier, monospace; font-size: 32px; font-weight: 700; color: #2563eb; letter-spacing: 8px; display: block; }
+        .footer { padding: 24px; text-align: center; background-color: #f8fafc; border-top: 1px solid #e2e8f0; font-size: 12px; color: #94a3b8; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="logo">PulseGuard</div>
+        </div>
+        <div class="content">
+            <h1>Verify your account</h1>
+            <p>Thanks for joining PulseGuard! Please use the verification code below to complete your registration.</p>
+            
+            <div class="otp-container">
+                <span class="otp-code">{{ .Token }}</span>
+            </div>
+            
+            <p style="font-size: 13px; color: #64748b;">This code will expire in 10 minutes.</p>
+        </div>
+        <div class="footer">
+            &copy; 2026 PulseGuard System. All rights reserved.<br>
+            If you didn't request this email, please ignore it.
+        </div>
+    </div>
+</body>
+</html>

@@ -59,17 +59,8 @@ export async function signUpUser(
         });
 
         if (authError) throw authError;
-        if (!authData.user) throw new Error("No user returned from signup");
 
-        // 2. Insert user profile into users table
-        const { error: insertError } = await supabase.from("users").insert({
-            id: authData.user.id,
-            email: email,
-            full_name: fullName,
-            role: role,
-        });
-
-        if (insertError) throw insertError;
+        // User profile is created automatically by database trigger
 
         return { user: authData.user, error: null };
     } catch (error: any) {
@@ -140,13 +131,13 @@ export async function signInWithProfile(
         const { profile, error: profileError } = await getUserProfile(user.id);
 
         if (profileError || !profile) {
-            // Profile missing - auth exists but DB record doesn't
+            // Profile missing - trigger might not have run or failed
             return {
                 user,
                 session,
                 profile: null,
                 error: {
-                    message: "Your account exists but profile is missing. Contact support."
+                    message: "Profile not found. Please contact support."
                 }
             };
         }
@@ -276,3 +267,36 @@ export async function verifyUserRole(expectedRole: UserRole): Promise<boolean> {
         return false;
     }
 }
+
+/**
+ * Verify email with OTP token
+ */
+export async function verifyEmailOtp(
+    email: string,
+    token: string,
+    type: any = 'signup'
+): Promise<{ data: any; error: any | null }> {
+    try {
+        const { data, error } = await supabase.auth.verifyOtp({
+            email,
+            token,
+            type,
+        });
+
+        if (error) throw error;
+        return { data, error: null };
+    } catch (error: any) {
+        console.error("Verify OTP error:", error);
+        return {
+            data: null,
+            error: {
+                message: error?.message || "Verification failed",
+                status: error?.status,
+            },
+        };
+    }
+}
+/**
+ * Verify email with OTP token
+ */
+
