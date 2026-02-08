@@ -1,8 +1,9 @@
 "use strict";
-import React from 'react';
-import { LayoutDashboard, Users, Activity, LogOut, Wifi, Zap } from 'lucide-react';
+import React, { useState } from 'react';
+import { LayoutDashboard, Users, Activity, LogOut, Wifi, Zap, Loader2 } from 'lucide-react';
 import { useSimulation } from '@/context/SimulationProvider';
-import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import { toast } from 'sonner';
 
 interface DashboardLayoutProps {
     children: React.ReactNode;
@@ -19,7 +20,31 @@ const WARDS = [
 ];
 
 export default function DashboardLayout({ children, selectedWard, onSelectWard }: DashboardLayoutProps) {
+    const router = useRouter();
     const { simulationState } = useSimulation();
+    const [isLoggingOut, setIsLoggingOut] = useState(false);
+
+    async function handleLogout() {
+        setIsLoggingOut(true);
+
+        try {
+            const { signOutUser } = await import("@/lib/auth");
+            const { error } = await signOutUser();
+
+            if (error) {
+                toast.error("Failed to log out. Please try again.");
+                setIsLoggingOut(false);
+                return;
+            }
+
+            // Success - redirect to home
+            router.push("/");
+        } catch (err) {
+            console.error("Logout error:", err);
+            toast.error("Failed to log out. Please try again.");
+            setIsLoggingOut(false);
+        }
+    }
 
     return (
         <div className="min-h-screen bg-slate-50 flex">
@@ -54,10 +79,18 @@ export default function DashboardLayout({ children, selectedWard, onSelectWard }
                 </div>
 
                 <div className="p-4 border-t border-slate-100">
-                    <Link href="/" className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-red-600 hover:bg-red-50 transition-colors">
-                        <LogOut className="w-5 h-5" />
-                        Sign Out
-                    </Link>
+                    <button
+                        onClick={handleLogout}
+                        disabled={isLoggingOut}
+                        className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-red-600 hover:bg-red-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                        {isLoggingOut ? (
+                            <Loader2 className="w-5 h-5 animate-spin" />
+                        ) : (
+                            <LogOut className="w-5 h-5" />
+                        )}
+                        {isLoggingOut ? "Logging out..." : "Sign Out"}
+                    </button>
                 </div>
             </aside>
 

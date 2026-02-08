@@ -2,11 +2,14 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { initialPatients, Patient } from "@/lib/mock-data";
 import { usePatientSync } from "@/hooks/use-patient-sync";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Activity, Heart, Thermometer, Wind, Wifi, ArrowUp, ArrowDown, ArrowRight } from "lucide-react";
+import { Activity, Heart, Thermometer, Wind, Wifi, ArrowUp, ArrowDown, ArrowRight, LogOut, Loader2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { toast } from "sonner";
 
 const VitalsCard = ({ title, value, unit, icon: Icon, color, trend }: any) => (
     <Card className="relative overflow-hidden border-none shadow-md bg-white">
@@ -37,9 +40,33 @@ const VitalsCard = ({ title, value, unit, icon: Icon, color, trend }: any) => (
 );
 
 export default function PatientDashboard() {
+    const router = useRouter();
     const [patient, setPatient] = useState<Patient>(initialPatients[0]); // Default to p1
     const { isConnected, lastSync } = usePatientSync("p1");
     const [lastUpdate, setLastUpdate] = useState<Date | null>(null);
+    const [isLoggingOut, setIsLoggingOut] = useState(false);
+
+    async function handleLogout() {
+        setIsLoggingOut(true);
+
+        try {
+            const { signOutUser } = await import("@/lib/auth");
+            const { error } = await signOutUser();
+
+            if (error) {
+                toast.error("Failed to log out. Please try again.");
+                setIsLoggingOut(false);
+                return;
+            }
+
+            // Success - redirect to home
+            router.push("/");
+        } catch (err) {
+            console.error("Logout error:", err);
+            toast.error("Failed to log out. Please try again.");
+            setIsLoggingOut(false);
+        }
+    }
 
     // Listen for sync updates
     useEffect(() => {
@@ -76,15 +103,30 @@ export default function PatientDashboard() {
                     <h1 className="text-3xl font-bold text-foreground">Good Morning, {patient.name.split(' ')[0]}</h1>
                     <p className="text-muted-foreground mt-1">Here is your daily health summary</p>
                 </div>
-                <div className="flex items-center gap-3 bg-card px-4 py-2 rounded-full shadow-sm border border-border">
-                    <div className={`flex items-center gap-2 ${isConnected ? "text-emerald-600 dark:text-emerald-500" : "text-amber-500"}`}>
-                        <Wifi className="h-4 w-4" />
-                        <span className="text-xs font-bold uppercase tracking-wider">{isConnected ? "5G Sync Active" : "Connecting..."}</span>
+                <div className="flex items-center gap-3">
+                    <div className="flex items-center gap-3 bg-card px-4 py-2 rounded-full shadow-sm border border-border">
+                        <div className={`flex items-center gap-2 ${isConnected ? "text-emerald-600 dark:text-emerald-500" : "text-amber-500"}`}>
+                            <Wifi className="h-4 w-4" />
+                            <span className="text-xs font-bold uppercase tracking-wider">{isConnected ? "5G Sync Active" : "Connecting..."}</span>
+                        </div>
+                        <span className="h-4 w-px bg-border" />
+                        <span className="text-xs text-muted-foreground">
+                            Last update: {lastUpdate?.toLocaleTimeString() ?? "Syncing..."}
+                        </span>
                     </div>
-                    <span className="h-4 w-px bg-border" />
-                    <span className="text-xs text-muted-foreground">
-                        Last update: {lastUpdate?.toLocaleTimeString() ?? "Syncing..."}
-                    </span>
+                    <Button
+                        variant="outline"
+                        onClick={handleLogout}
+                        disabled={isLoggingOut}
+                        className="gap-2"
+                    >
+                        {isLoggingOut ? (
+                            <Loader2 className="h-4 w-4 animate-spin" />
+                        ) : (
+                            <LogOut className="h-4 w-4" />
+                        )}
+                        {isLoggingOut ? "Logging out..." : "Logout"}
+                    </Button>
                 </div>
             </div>
 
