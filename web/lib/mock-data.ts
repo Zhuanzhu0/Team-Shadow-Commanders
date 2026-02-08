@@ -17,6 +17,7 @@ export interface Alert {
     acknowledged: boolean;
 }
 
+
 export interface BillItem {
     id: string;
     description: string;
@@ -26,6 +27,7 @@ export interface BillItem {
 
 export interface DischargeRequest {
     status: "none" | "pending" | "approved" | "rejected";
+
     note?: string;
     requestedAt?: string;
     respondedAt?: string;
@@ -48,6 +50,7 @@ export interface Report {
     type: "Lab" | "Imaging" | "Prescription" | "Discharge";
     doctor: string;
     status: "Ready" | "Processing";
+
 }
 
 export interface Patient {

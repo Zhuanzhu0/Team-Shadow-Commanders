@@ -1,3 +1,4 @@
+"use strict";
 "use client";
 
 import { useState } from "react";
@@ -37,10 +38,8 @@ export function AuthForm({ role, type }: AuthFormProps) {
         const fullName = formData.get("fullName") as string;
 
         try {
-            // TODO: Implement Supabase Auth Logic here
-            console.log("Submitting:", { role, type, email, password, fullName });
-
             // Simulate API call
+            console.log("Submitting:", { role, type, email, password, fullName });
             await new Promise((resolve) => setTimeout(resolve, 1500));
 
             // Store user data in localStorage for demo purposes
@@ -55,8 +54,6 @@ export function AuthForm({ role, type }: AuthFormProps) {
                 const currentPatients = getStoredPatients();
 
                 // For this demo, we override the first patient "p1" with the new user's details
-                // This ensures the dashboard (which defaults to p1) shows the new user
-                // In a real app, we'd add a new patient and return their ID
                 const updatedPatients = currentPatients.map(p =>
                     p.id === "p1" ? { ...p, name: fullName, age: 30 } : p
                 );
