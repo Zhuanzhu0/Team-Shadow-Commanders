@@ -65,6 +65,7 @@ export interface Patient {
     history: Vitals[]; // For charts
     alerts: Alert[];
     assignedDoctor: string;
+    doctorPhone?: string;
     billing: BillItem[];
     dischargeRequest: DischargeRequest;
     medications: Medication[];
@@ -91,6 +92,7 @@ export const initialPatients: Patient[] = [
         history: [],
         alerts: [],
         assignedDoctor: "Dr. Sarah Chen",
+        doctorPhone: "555-0101",
         billing: [
             { id: "b1", description: "Initial Consultation", cost: 150, timestamp: new Date().toISOString() },
             { id: "b2", description: "Blood Test Panel", cost: 200, timestamp: new Date().toISOString() }
@@ -162,6 +164,7 @@ export const initialPatients: Patient[] = [
             },
         ],
         assignedDoctor: "Dr. Ahmed Khan",
+        doctorPhone: "555-0102",
         billing: [],
         dischargeRequest: { status: "none" },
         medications: [],
@@ -201,6 +204,7 @@ export const initialPatients: Patient[] = [
             },
         ],
         assignedDoctor: "Dr. Emily Davis",
+        doctorPhone: "555-0103",
         billing: [],
         dischargeRequest: { status: "none" },
         medications: [],
@@ -225,6 +229,7 @@ export const initialPatients: Patient[] = [
         history: [],
         alerts: [],
         assignedDoctor: "Dr. Sarah Chen",
+        doctorPhone: "555-0101",
         billing: [],
         dischargeRequest: { status: "none" },
         medications: [],

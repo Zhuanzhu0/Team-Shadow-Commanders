@@ -53,21 +53,31 @@ export default function PatientMonitor({ params }: { params: Promise<{ id: strin
         setIsEscalating(true);
         setEscalationStatus("sending");
 
-        // Simulate network delay
+        // Simulate network delay for sending message
         await new Promise((resolve) => setTimeout(resolve, 1500));
 
         setEscalationStatus("sent");
         setIsEscalating(false);
 
-        toast.success(`Emergency Alert sent to Dr. ${patient.assignedDoctor}`, {
-            description: "Response expected in < 2 mins"
+        // 1. Simulate Message Sent
+        toast.success(`Emergency Alert sent to ${patient.assignedDoctor}`, {
+            description: "Message delivered. Initiating call..."
         });
+
+        // 2. Initiate Phone Call
+        // In a real app, this would use the doctor's real number
+        const phoneNumber = patient.doctorPhone || "911";
+
+        // Small delay to let the user see the "Sent" state before the browser handles the tel link
+        setTimeout(() => {
+            window.location.href = `tel:${phoneNumber}`;
+        }, 500);
 
         // Auto close modal after a moment
         setTimeout(() => {
             setShowCriticalModal(false);
             setEscalationStatus("idle");
-        }, 2000);
+        }, 2500);
     };
 
     const handleAcknowledge = () => {
