@@ -236,7 +236,7 @@ export default function PatientMonitor({ params }: { params: Promise<{ id: strin
                     status={patient.vitals.spo2 < 95 ? "Warning" : "Normal"}
                 />
                 <VitalCard
-                    title="Temp"
+                    title="Body Temp"
                     value={patient.vitals.temperature.toFixed(1)}
                     unit="°C"
                     icon={Thermometer}

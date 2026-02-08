@@ -44,7 +44,7 @@ export async function signUpUser(
     password: string,
     fullName: string,
     role: UserRole
-): Promise<{ user: any; error: AuthError | null }> {
+): Promise<{ user: any; session: any; error: AuthError | null }> {
     try {
         // 1. Create auth user
         const { data: authData, error: authError } = await supabase.auth.signUp({
@@ -62,11 +62,12 @@ export async function signUpUser(
 
         // User profile is created automatically by database trigger
 
-        return { user: authData.user, error: null };
+        return { user: authData.user, session: authData.session, error: null };
     } catch (error: any) {
         console.error("Signup error:", error);
         return {
             user: null,
+            session: null,
             error: {
                 message: error?.message || "Signup failed",
                 status: error?.status

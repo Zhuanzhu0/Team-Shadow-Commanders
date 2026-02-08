@@ -1,3 +1,4 @@
+"use strict";
 "use client";
 
 import { useState } from "react";
@@ -82,7 +83,7 @@ export function AuthForm({ role, type }: AuthFormProps) {
                 const fullName = formData.get("fullName") as string;
                 const { signUpUser } = await import("@/lib/auth");
 
-                const { user, error: authError } = await signUpUser(
+                const { user, session, error: authError } = await signUpUser(
                     email,
                     password,
                     fullName,
@@ -94,12 +95,24 @@ export function AuthForm({ role, type }: AuthFormProps) {
                     return;
                 }
 
-                if (!user) {
+                if (!user && !session) {
                     setError("Signup failed. Please try again.");
                     return;
                 }
 
-                // Switch to verification mode
+                if (session) {
+                    // Auto-confirmed (email confirmation disabled or unnecessary)
+                    const redirectMap = {
+                        doctor: "/doctor/dashboard",
+                        nurse: "/nurse/dashboard",
+                        patient: "/patient/dashboard",
+                    };
+                    const redirectTo = redirectMap[role] || "/";
+                    router.push(redirectTo);
+                    return;
+                }
+
+                // Switch to verification mode (email confirmation enabled)
                 setPendingEmail(email);
                 setIsVerifying(true);
                 setError(null); // Clear any errors

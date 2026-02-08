@@ -1,3 +1,5 @@
+export type PatientStatus = "Stable" | "Warning" | "Critical" | "Pending Discharge" | "Discharged";
+
 export interface Vitals {
     heartRate: number;
     bloodPressureSys: number;
@@ -15,7 +17,6 @@ export interface Alert {
     acknowledged: boolean;
 }
 
-export type PatientStatus = "Stable" | "Warning" | "Critical" | "Pending Discharge" | "Discharged";
 
 export interface BillItem {
     id: string;
@@ -26,10 +27,30 @@ export interface BillItem {
 
 export interface DischargeRequest {
     status: "none" | "pending" | "approved" | "rejected";
-    requestedBy?: string;
+
+    note?: string;
     requestedAt?: string;
-    approvedBy?: string;
-    approvedAt?: string;
+    respondedAt?: string;
+}
+
+export interface Medication {
+    id: string;
+    name: string;
+    dosage: string;
+    frequency: string;
+    time: "Morning" | "Afternoon" | "Evening" | "Night";
+    status: "taken" | "missed" | "upcoming";
+    instructions?: string;
+}
+
+export interface Report {
+    id: string;
+    title: string;
+    date: string;
+    type: "Lab" | "Imaging" | "Prescription" | "Discharge";
+    doctor: string;
+    status: "Ready" | "Processing";
+
 }
 
 export interface Patient {
@@ -46,6 +67,8 @@ export interface Patient {
     assignedDoctor: string;
     billing: BillItem[];
     dischargeRequest: DischargeRequest;
+    medications: Medication[];
+    reports: Report[];
 }
 
 export const initialPatients: Patient[] = [
@@ -73,6 +96,44 @@ export const initialPatients: Patient[] = [
             { id: "b2", description: "Blood Test Panel", cost: 200, timestamp: new Date().toISOString() }
         ],
         dischargeRequest: { status: "none" },
+        medications: [
+            {
+                id: "m1",
+                name: "Lisinopril",
+                dosage: "10mg",
+                frequency: "Once daily",
+                time: "Morning",
+                status: "upcoming",
+                instructions: "Take with food"
+            },
+            {
+                id: "m2",
+                name: "Atorvastatin",
+                dosage: "20mg",
+                frequency: "Once daily",
+                time: "Night",
+                status: "taken",
+                instructions: "Before bed"
+            }
+        ],
+        reports: [
+            {
+                id: "r1",
+                title: "Blood Chemistry Panel",
+                date: "2024-02-15",
+                type: "Lab",
+                doctor: "Dr. Sarah Chen",
+                status: "Ready"
+            },
+            {
+                id: "r2",
+                title: "Chest X-Ray",
+                date: "2024-02-14",
+                type: "Imaging",
+                doctor: "Dr. Smith",
+                status: "Ready"
+            }
+        ]
     },
     {
         id: "p2",
@@ -103,6 +164,8 @@ export const initialPatients: Patient[] = [
         assignedDoctor: "Dr. Ahmed Khan",
         billing: [],
         dischargeRequest: { status: "none" },
+        medications: [],
+        reports: [],
     },
     {
         id: "p3",
@@ -140,6 +203,8 @@ export const initialPatients: Patient[] = [
         assignedDoctor: "Dr. Emily Davis",
         billing: [],
         dischargeRequest: { status: "none" },
+        medications: [],
+        reports: [],
     },
     {
         id: "p4",
@@ -162,6 +227,8 @@ export const initialPatients: Patient[] = [
         assignedDoctor: "Dr. Sarah Chen",
         billing: [],
         dischargeRequest: { status: "none" },
+        medications: [],
+        reports: [],
     },
 ];
 
@@ -183,4 +250,31 @@ export function fluctuateVitals(current: Vitals, status: PatientStatus): Vitals 
         temperature: Number((Math.max(34, Math.min(42, current.temperature + (Math.random() - 0.5) * 0.1 * stabilityFactor))).toFixed(1)),
         respiratoryRate: Math.max(8, Math.min(40, change(current.respiratoryRate, stabilityFactor === 8 ? 2 : 1))),
     };
+}
+
+// --- LocalStorage Helpers for Shared Simulation ---
+
+export const STORAGE_KEY = "pulseguard_patients";
+
+export function getStoredPatients(): Patient[] {
+    if (typeof window === "undefined") return initialPatients;
+
+    const stored = localStorage.getItem(STORAGE_KEY);
+    if (!stored) {
+        // Initialize if empty
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(initialPatients));
+        return initialPatients;
+    }
+
+    try {
+        return JSON.parse(stored);
+    } catch (e) {
+        console.error("Failed to parse patient data", e);
+        return initialPatients;
+    }
+}
+
+export function savePatients(patients: Patient[]) {
+    if (typeof window === "undefined") return;
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(patients));
 }
